@@ -81,7 +81,7 @@ export interface RedditPost {
     removed_by_category: null;
     banned_by: null;
     author_flair_type: FlairType;
-    domain: Domain;
+    domain: string;
     allow_live_comments: boolean;
     selftext_html: null | string;
     likes: null;
@@ -98,7 +98,7 @@ export interface RedditPost {
     can_gild: boolean;
     spoiler: boolean;
     locked: boolean;
-    author_flair_text: AuthorFlairText | null;
+    author_flair_text: string | null;
     treatment_tags: any[];
     visited: boolean;
     removed_by: null;
@@ -173,28 +173,12 @@ export interface ResizedIcon {
     height: number;
 }
 
-export enum AuthorFlairText {
-    CityMod = "City Mod",
-    Empty = "",
-}
-
 export enum FlairTextColor {
     Dark = "dark",
 }
 
 export enum FlairType {
     Text = "text",
-}
-
-export enum ContentCategory {
-    Photography = "photography",
-}
-
-export enum Domain {
-    IImgurCOM = "i.imgur.com",
-    IReddIt = "i.redd.it",
-    PBSTwimgCOM = "pbs.twimg.com",
-    SelfCityPorn = "self.CityPorn",
 }
 
 export interface Gildings {
@@ -463,7 +447,7 @@ const typeMap: any = {
         { json: "can_gild", js: "can_gild", typ: true },
         { json: "spoiler", js: "spoiler", typ: true },
         { json: "locked", js: "locked", typ: true },
-        { json: "author_flair_text", js: "author_flair_text", typ: u(r("AuthorFlairText"), null) },
+        { json: "author_flair_text", js: "author_flair_text", typ: u("", null) },
         { json: "treatment_tags", js: "treatment_tags", typ: "any" },
         { json: "visited", js: "visited", typ: true },
         { json: "removed_by", js: "removed_by", typ: "any" },
@@ -497,7 +481,7 @@ const typeMap: any = {
         { json: "post_hint", js: "post_hint", typ: u(undefined, "") },
         { json: "url_overridden_by_dest", js: "url_overridden_by_dest", typ: u(undefined, "") },
         { json: "preview", js: "preview", typ: u(undefined, r("Preview")) },
-    ], false),
+    ], "any"),
     "AllAwarding": o([
         { json: "giver_coin_reward", js: "giver_coin_reward", typ: u(0, null) },
         { json: "subreddit_id", js: "subreddit_id", typ: "any" },
@@ -529,39 +513,32 @@ const typeMap: any = {
         { json: "penny_price", js: "penny_price", typ: u(0, null) },
         { json: "award_type", js: "award_type", typ: r("AwardType") },
         { json: "static_icon_url", js: "static_icon_url", typ: "" },
-    ], false),
+    ], "any"),
     "ResizedIcon": o([
         { json: "url", js: "url", typ: "" },
         { json: "width", js: "width", typ: 0 },
         { json: "height", js: "height", typ: 0 },
-    ], false),
+    ], "any"),
     "Gildings": o([
         { json: "gid_1", js: "gid_1", typ: u(undefined, 0) },
-    ], false),
+    ], "any"),
     "MediaEmbed": o([
-    ], false),
+    ], "any"),
     "Preview": o([
         { json: "images", js: "images", typ: "any" },
         { json: "enabled", js: "enabled", typ: true },
-    ], false),
+    ], "any"),
     "Image": o([
         { json: "source", js: "source", typ: r("ResizedIcon") },
         { json: "resolutions", js: "resolutions", typ: a(r("ResizedIcon")) },
         { json: "variants", js: "variants", typ: r("MediaEmbed") },
         { json: "id", js: "id", typ: "" },
-    ], false),
-    "AuthorFlairText": [
-        "City Mod",
-        "",
-    ],
+    ], "any"),
     "FlairTextColor": [
         "dark",
     ],
     "FlairType": [
         "text",
-    ],
-    "ContentCategory": [
-        "photography",
     ],
     "WhitelistStatus": [
         "all_ads",

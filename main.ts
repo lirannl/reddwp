@@ -19,4 +19,9 @@ async function getDownloaded(): Promise<(Deno.FileInfo & { name: string })[]> {
 
 export { AsyncMode, getDownloaded };
 
+console.log(`\
+Downloader starting.
+Config found at ${config.configFilePath}
+Files will be downloaded to ${config.targetFolder}`
+);
 retriever();

@@ -32,7 +32,7 @@ if (!fileExists(path.join(appFolder, "config.json"))) {
         interval: 20,
         filterNsfw: true,
         maxFolderSize: 500,
-        minimumSize: 1,
+        minimumSize: 0.1,
     };
     // Write defaults as config.json
     await Deno.writeFile(path.join(appFolder, "config.json"), new TextEncoder().encode(

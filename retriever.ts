@@ -3,6 +3,29 @@ import { getDownloaded, AsyncMode } from "./main.ts";
 import { Convert, RedditPost } from "./responses/reddit.ts";
 import * as path from 'https://deno.land/std/path/mod.ts';
 
+// Delete old items from a folder to clear space before adding a new item
+const trimFolder = async (folder: {
+    files: (Deno.FileInfo & { name: string })[]
+    path: string
+}, newItemSize: number, maxSize: number) => {
+    if (newItemSize > maxSize)
+        throw new Error(`Maximum size is too small. Please edit the config and set a size larger than ${config.maxFolderSize}MB.`);
+    let folderSize = folder.files.reduce((acc, curr) => {
+        return acc + curr.size
+    }, 0) / 1000000;
+    const filesByDate = [...folder.files].sort((a, b) => {
+        if (a.birthtime! > b.birthtime!) return -1;
+        if (a.birthtime == b.birthtime) return 0;
+        return 0;
+    })
+    while (folderSize > maxSize && filesByDate.length > 0) {
+        // Delete the oldest item
+        const fileToRemove = filesByDate.pop()!;
+        await Deno.remove(path.join(folder.path, fileToRemove.name));
+        folderSize -= fileToRemove.size / 1000000;
+    }
+}
+
 // Given a reddit post, return the size of its link
 const measurePostSize = async (post: RedditPost) => {
     if (post.is_self) return null;
@@ -12,10 +35,12 @@ const measurePostSize = async (post: RedditPost) => {
     return parseInt(possibleSizeStr) / 1000000;
 }
 
-const postFilter = async (post: RedditPost) => {
+const postFilter = async (existingDownloads: string[], post: RedditPost) => {
     const conditions: (() => boolean | Promise<boolean>)[] = [
         // Don't try to download self posts
-        () => !post.is_self
+        () => !post.is_self,
+        // Don't try to re-download posts
+        () => !existingDownloads.includes(post.id)
     ];
     // Don't try to download NSFW content if configured not to
     if (config.filterNsfw) conditions.push(() => !post.over_18);
@@ -38,13 +63,12 @@ const postFilter = async (post: RedditPost) => {
 
 async function retriever() {
     if (config.sources.length == 0) {
-        console.log("No sources coonfigured.")
+        console.log("No sources coonfigured.");
         return;
     }
     const source = config.sources[Math.floor(Math.random() * config.sources.length)];
     if (source.startsWith("r/")) {
         const downloads = await getDownloaded();
-        const existingPosts = downloads.map(file => file.name.split('.')[0].split('_').reverse()[0]);
         let after: string | undefined;
         let imageBytes: ArrayBuffer = new ArrayBuffer(0);
         let post: RedditPost | undefined;
@@ -62,18 +86,23 @@ async function retriever() {
                 .then(items => items.map(({ data }) => data))
                 ;
             after = posts[posts.length - 1].id;
+            const existingPosts = downloads.map(file => file.name.split('.')[0].split('_').reverse()[0]);
             post = await posts.asyncFind(
-                async post => !existingPosts.includes(post.id) && await postFilter(post),
+                async post => await postFilter(existingPosts, post),
                 AsyncMode.Parellel
             );
         }
         const fileName = `${source.replace("/", "_")}_${post.id}.${post.url.split(".").reverse()[0]}`;
         console.log(`Downloading ${post.id} from ${source}`);
         imageBytes = await (await fetch(post.url)).arrayBuffer();
+        // If the folder's size will exceed the maximum, delete old items until it won't
+        await trimFolder({ files: downloads, path: config.targetFolder },
+            imageBytes.byteLength / 1000000, config.maxFolderSize);
         // Download the post
         await Deno.writeFile(path.join(config.targetFolder, fileName),
             new Uint8Array(imageBytes), { create: true });
     }
+    // Rerun the retriever based on the interval set in the config
     setTimeout(() => { retriever() }, config.interval * (1000 * 60));
 }
 
