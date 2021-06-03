@@ -1,7 +1,7 @@
 import config from "./config.ts";
-import { getDownloaded, AsyncMode } from "./main.ts";
+import { getDownloaded, AsyncMode, global } from "./main.ts";
 import { Convert, RedditPost } from "./responses/reddit.ts";
-import * as path from 'https://deno.land/std/path/mod.ts';
+import * as path from 'https://deno.land/std@0.97.0/path/mod.ts';
 
 // Delete old items from a folder to clear space before adding a new item
 const trimFolder = async (folder: {
@@ -39,8 +39,11 @@ const postFilter = async (existingDownloads: string[], post: RedditPost) => {
     const conditions: (() => boolean | Promise<boolean>)[] = [
         // Don't try to download self posts
         () => !post.is_self,
+        // Only try to download posts that link to static files
+        () => /[a-zA-Z0-9_-]+\.[a-zA-Z0-9]+$/.test(post.url),
+        () => !/\.(php)|(html)+$/.test(post.url),
         // Don't try to re-download posts
-        () => !existingDownloads.includes(post.id)
+        () => !existingDownloads.includes(post.id),
     ];
     // Don't try to download NSFW content if configured not to
     if (config.filterNsfw) conditions.push(() => !post.over_18);
@@ -48,7 +51,7 @@ const postFilter = async (existingDownloads: string[], post: RedditPost) => {
     conditions.push(async () => {
         // Don't check the size if a minimum size isn't configured
         if (!config.minimumSize) return true;
-        const size = await measurePostSize(post);
+        const size = await measurePostSize(post).catch(_ => null);
         // If the post's size cannot be determined, ignore it
         if (!size) return false;
         return size >= config.minimumSize!;
@@ -70,40 +73,40 @@ async function retriever() {
     if (source.startsWith("r/")) {
         const downloads = await getDownloaded();
         let after: string | undefined;
-        let imageBytes: ArrayBuffer = new ArrayBuffer(0);
+        let numberFetched = 0;
         let post: RedditPost | undefined;
         while (!post) {
             let url = new URL(`https://www.reddit.com/${source}/hot.json`);
-            if (after) {
+            if (after && numberFetched) {
                 url.searchParams.append("after", after);
+                url.searchParams.append("count", `${numberFetched}`);
             }
             // Grab the a new post from the subreddit
             const posts = await fetch(url)
                 .then(res => res.text())
-                .then(res => {
-                    return Convert.toRedditResponse(res).data.children
-                })
-                .then(items => items.map(({ data }) => data))
+                .then(resText => Convert.toRedditResponse(resText).data.children
+                )
                 ;
-            after = posts[posts.length - 1].id;
+            after = `${posts[posts.length - 1].kind}_${posts[posts.length - 1].data.id}`;
+            numberFetched = posts.length;
             const existingPosts = downloads.map(file => file.name.split('.')[0].split('_').reverse()[0]);
-            post = await posts.asyncFind(
-                async post => await postFilter(existingPosts, post),
+            post = (await posts.asyncFind(
+                async post => await postFilter(existingPosts, post.data),
                 AsyncMode.Parellel
-            );
+            ))?.data;
         }
-        const fileName = `${source.replace("/", "_")}_${post.id}.${post.url.split(".").reverse()[0]}`;
+        const fileName = `${source.replace(/[\/\\]/, "_")}_${post.id}.${post.url.split(".").reverse()[0]}`;
         console.log(`Downloading ${post.id} from ${source}`);
-        imageBytes = await (await fetch(post.url)).arrayBuffer();
+        const imageBytes = await (await fetch(post.url)).arrayBuffer();
         // If the folder's size will exceed the maximum, delete old items until it won't
-        await trimFolder({ files: downloads, path: config.targetFolder },
+        if (config.maxFolderSize) await trimFolder({ files: downloads, path: config.targetFolder },
             imageBytes.byteLength / 1000000, config.maxFolderSize);
         // Download the post
         await Deno.writeFile(path.join(config.targetFolder, fileName),
             new Uint8Array(imageBytes), { create: true });
     }
     // Rerun the retriever based on the interval set in the config
-    setTimeout(() => { retriever() }, config.interval * (1000 * 60));
+    global.nextIteration = setTimeout(() => { retriever() }, config.interval * (1000 * 60));
 }
 
 export default retriever;

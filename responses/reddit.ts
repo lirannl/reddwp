@@ -21,7 +21,7 @@ export interface RedditResponseData {
 }
 
 export interface Child {
-    kind: Kind;
+    kind: string;
     data: RedditPost;
 }
 
@@ -29,13 +29,13 @@ export interface RedditPost {
     approved_at_utc: null;
     subreddit: string;
     selftext: string;
-    author_fullname: string;
+    author_fullname: unknown;
     saved: boolean;
     mod_reason_title: null;
     gilded: number;
     clicked: boolean;
     title: string;
-    link_flair_richtext: any[];
+    link_flair_richtext: unknown[];
     subreddit_name_prefixed: string;
     hidden: boolean;
     pwls: number;
@@ -46,27 +46,27 @@ export interface RedditPost {
     hide_score: boolean;
     name: string;
     quarantine: boolean;
-    link_flair_text_color: FlairTextColor;
+    link_flair_text_color: unknown;
     upvote_ratio: number;
     author_flair_background_color: null | string;
     subreddit_type: string;
     ups: number;
     total_awards_received: number;
-    media_embed: MediaEmbed;
+    media_embed: unknown;
     thumbnail_width: number | null;
     author_flair_template_id: null | string;
     is_original_content: boolean;
-    user_reports: any[];
+    user_reports: unknown[];
     secure_media: null;
     is_reddit_media_domain: boolean;
     is_meta: boolean;
     category: null;
-    secure_media_embed: MediaEmbed;
+    secure_media_embed: unknown;
     link_flair_text: null;
     can_mod_post: boolean;
     score: number;
     approved_by: null;
-    author_premium: boolean;
+    author_premium: unknown;
     thumbnail: string;
     edited: boolean;
     author_flair_css_class?: string | null;
@@ -76,11 +76,11 @@ export interface RedditPost {
     is_self: boolean;
     mod_note: null;
     created: Date;
-    link_flair_type: FlairType;
+    link_flair_type: unknown;
     wls: number;
     removed_by_category: null;
     banned_by: null;
-    author_flair_type: FlairType;
+    author_flair_type: unknown;
     domain: string;
     allow_live_comments: boolean;
     selftext_html: null | string;
@@ -99,7 +99,7 @@ export interface RedditPost {
     spoiler: boolean;
     locked: boolean;
     author_flair_text: string | null;
-    treatment_tags: any[];
+    treatment_tags: unknown[];
     visited: boolean;
     removed_by: null;
     num_reports: null;
@@ -115,13 +115,13 @@ export interface RedditPost {
     discussion_type: null;
     num_comments: number;
     send_replies: boolean;
-    whitelist_status: WhitelistStatus;
+    whitelist_status: unknown;
     contest_mode: boolean;
-    mod_reports: any[];
-    author_patreon_flair: boolean;
-    author_flair_text_color: FlairTextColor | null;
+    mod_reports: unknown[];
+    author_patreon_flair: unknown;
+    author_flair_text_color: unknown | null;
     permalink: string;
-    parent_whitelist_status: WhitelistStatus;
+    parent_whitelist_status: unknown;
     stickied: boolean;
     url: string;
     subreddit_subscribers: number;
@@ -173,23 +173,8 @@ export interface ResizedIcon {
     height: number;
 }
 
-export enum FlairTextColor {
-    Dark = "dark",
-}
-
-export enum FlairType {
-    Text = "text",
-}
-
 export interface Gildings {
     gid_1?: number;
-}
-
-export interface MediaEmbed {
-}
-
-export enum WhitelistStatus {
-    AllAds = "all_ads",
 }
 
 export enum PostHint {
@@ -204,12 +189,8 @@ export interface Preview {
 export interface Image {
     source: ResizedIcon;
     resolutions: ResizedIcon[];
-    variants: MediaEmbed;
+    variants: unknown;
     id: string;
-}
-
-export enum Kind {
-    T3 = "t3",
 }
 
 // Converts JSON strings to/from your types
@@ -369,14 +350,14 @@ const typeMap: any = {
         { json: "before", js: "before", typ: u("", null) },
     ], false),
     "Child": o([
-        { json: "kind", js: "kind", typ: r("Kind") },
+        { json: "kind", js: "kind", typ: "" },
         { json: "data", js: "data", typ: r("RedditPost") },
     ], false),
     "RedditPost": o([
         { json: "approved_at_utc", js: "approved_at_utc", typ: u(Date, null) },
         { json: "subreddit", js: "subreddit", typ: "" },
         { json: "selftext", js: "selftext", typ: "" },
-        { json: "author_fullname", js: "author_fullname", typ: "" },
+        { json: "author_fullname", js: "author_fullname", typ: "any" },
         { json: "saved", js: "saved", typ: true },
         { json: "mod_reason_title", js: "mod_reason_title", typ: u("", null) },
         { json: "gilded", js: "gilded", typ: 0 },
@@ -393,14 +374,14 @@ const typeMap: any = {
         { json: "hide_score", js: "hide_score", typ: true },
         { json: "name", js: "name", typ: "" },
         { json: "quarantine", js: "quarantine", typ: true },
-        { json: "link_flair_text_color", js: "link_flair_text_color", typ: r("FlairTextColor") },
+        { json: "link_flair_text_color", js: "link_flair_text_color", typ: "any" },
         { json: "link_flair_template_id", js: "link_flair_template_id", typ: u("", null, undefined) },
         { json: "upvote_ratio", js: "upvote_ratio", typ: 3.14 },
         { json: "author_flair_background_color", js: "author_flair_background_color", typ: u(null, "") },
         { json: "subreddit_type", js: "subreddit_type", typ: "" },
         { json: "ups", js: "ups", typ: 0 },
         { json: "total_awards_received", js: "total_awards_received", typ: 0 },
-        { json: "media_embed", js: "media_embed", typ: r("MediaEmbed") },
+        { json: "media_embed", js: "media_embed", typ: "any" },
         { json: "thumbnail_width", js: "thumbnail_width", typ: u(0, null) },
         { json: "author_flair_template_id", js: "author_flair_template_id", typ: u(null, "") },
         { json: "is_original_content", js: "is_original_content", typ: true },
@@ -409,12 +390,12 @@ const typeMap: any = {
         { json: "is_reddit_media_domain", js: "is_reddit_media_domain", typ: true },
         { json: "is_meta", js: "is_meta", typ: true },
         { json: "category", js: "category", typ: "any" },
-        { json: "secure_media_embed", js: "secure_media_embed", typ: r("MediaEmbed") },
+        { json: "secure_media_embed", js: "secure_media_embed", typ: "any" },
         { json: "link_flair_text", js: "link_flair_text", typ: "any" },
         { json: "can_mod_post", js: "can_mod_post", typ: true },
         { json: "score", js: "score", typ: 0 },
         { json: "approved_by", js: "approved_by", typ: "any" },
-        { json: "author_premium", js: "author_premium", typ: true },
+        { json: "author_premium", js: "author_premium", typ: "any" },
         { json: "thumbnail", js: "thumbnail", typ: "" },
         { json: "edited", js: "edited", typ: true },
         { json: "author_flair_css_class", js: "author_flair_css_class", typ: u("", null) },
@@ -424,11 +405,11 @@ const typeMap: any = {
         { json: "is_self", js: "is_self", typ: true },
         { json: "mod_note", js: "mod_note", typ: "any" },
         { json: "created", js: "created", typ: Date },
-        { json: "link_flair_type", js: "link_flair_type", typ: r("FlairType") },
+        { json: "link_flair_type", js: "link_flair_type", typ: "any" },
         { json: "wls", js: "wls", typ: 0 },
         { json: "removed_by_category", js: "removed_by_category", typ: "any" },
         { json: "banned_by", js: "banned_by", typ: "any" },
-        { json: "author_flair_type", js: "author_flair_type", typ: r("FlairType") },
+        { json: "author_flair_type", js: "author_flair_type", typ: "any" },
         { json: "domain", js: "domain", typ: "" },
         { json: "allow_live_comments", js: "allow_live_comments", typ: true },
         { json: "selftext_html", js: "selftext_html", typ: u(null, "") },
@@ -464,13 +445,13 @@ const typeMap: any = {
         { json: "discussion_type", js: "discussion_type", typ: "any" },
         { json: "num_comments", js: "num_comments", typ: 0 },
         { json: "send_replies", js: "send_replies", typ: true },
-        { json: "whitelist_status", js: "whitelist_status", typ: r("WhitelistStatus") },
+        { json: "whitelist_status", js: "whitelist_status", typ: "any" },
         { json: "contest_mode", js: "contest_mode", typ: true },
         { json: "mod_reports", js: "mod_reports", typ: "any" },
-        { json: "author_patreon_flair", js: "author_patreon_flair", typ: true },
-        { json: "author_flair_text_color", js: "author_flair_text_color", typ: u(r("FlairTextColor"), null) },
+        { json: "author_patreon_flair", js: "author_patreon_flair", typ: "any" },
+        { json: "author_flair_text_color", js: "author_flair_text_color", typ: u("any", null) },
         { json: "permalink", js: "permalink", typ: "" },
-        { json: "parent_whitelist_status", js: "parent_whitelist_status", typ: r("WhitelistStatus") },
+        { json: "parent_whitelist_status", js: "parent_whitelist_status", typ: "any" },
         { json: "stickied", js: "stickied", typ: true },
         { json: "url", js: "url", typ: "" },
         { json: "subreddit_subscribers", js: "subreddit_subscribers", typ: 0 },
@@ -534,19 +515,7 @@ const typeMap: any = {
         { json: "variants", js: "variants", typ: r("MediaEmbed") },
         { json: "id", js: "id", typ: "" },
     ], "any"),
-    "FlairTextColor": [
-        "dark",
-    ],
-    "FlairType": [
-        "text",
-    ],
-    "WhitelistStatus": [
-        "all_ads",
-    ],
     "PostHint": [
         "image",
-    ],
-    "Kind": [
-        "t3",
-    ],
+    ]
 };

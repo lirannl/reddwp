@@ -10,6 +10,7 @@
             "type": "pwa-node",
             "program": "main.ts",
             "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
             "runtimeExecutable": "deno",
             "outputCapture": "std",
             "runtimeArgs": [
