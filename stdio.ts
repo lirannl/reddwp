@@ -37,6 +37,10 @@ export const handler = async (line: string) => {
         case "exit":
             {
                 Deno.exit(0);
-            }    
-        }
+            }
+        default:
+            {
+                console.log(`Unknown commmand "${cmd}".`);
+            } break;
+    }
 }
